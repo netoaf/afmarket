@@ -1,0 +1,44 @@
+@model AFMarket.Models.User
+@{
+    ViewData["Title"] = "Register";
+}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="page-content">
+                <div class="container py-5">
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <div class="card bg-dark text-white rounded-4 shadow p-4">
+                                <h2 class="text-center mb-4 text-pink">Register</h2>
+                                <form asp-action="NewUser" method="post">
+                                    <div asp-validation-summary="All" class="text-danger"></div>
+                                    <div class="form-group mb-3">
+                                        <label for="text" class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="Username" name="Username" required>
+                                    </div>
+                                    <div class="form-group mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="Email" name="Email" required>
+                                    </div>
+                                    <div class="form-group mb-3">
+                                        <label for="password" class="form-label">Password</label>
+                                        <input type="password" class="form-control" id="password" name="password" required>
+                                    </div>
+                                    <div class="form-group mb-4">
+                                        <label for="cpassword" class="form-label">Confirm Password</label>
+                                        <input type="password" class="form-control" id="cpassword" name="cpassword" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="submit" class="btn btn-primary w-100">Registrar</button>
+                                    </div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

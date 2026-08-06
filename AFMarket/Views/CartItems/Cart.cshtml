@@ -1,0 +1,97 @@
+@model IEnumerable<AFMarket.Models.CartItem>
+
+@{
+    ViewData["Title"] = "Cart";
+    var orders = ViewBag.Orders as IEnumerable<AFMarket.Models.Order>
+        ?? Enumerable.Empty<AFMarket.Models.Order>();
+}
+
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1 class="profile-name">Carrinho de Compras</h1>
+        </div>
+
+        <div class="profile-content">
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+            @if (Model.Any())
+            {
+                <div class="details-card">
+                    <h3>Itens no Carrinho</h3>
+                    @foreach (var item in Model)
+                    {
+                        <div class="detail-item">
+                            <div class="detail-info">
+                                <span class="detail-label">@item.Product.Name</span>
+                                <div class="cart-quantity-control">
+                                    <form asp-action="UpdateQuantity" method="post" class="quantity-form">
+                                        <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                        <button type="submit" name="action" value="decrease" class="quantity-btn">-</button>
+                                        <span class="quantity-value">@item.Quantity</span>
+                                        <button type="submit" name="action" value="increase" class="quantity-btn">+</button>
+                                    </form>
+                                    <form asp-action="RemoveItem" method="post" class="remove-form">
+                                        <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                        <button type="submit" class="remove-btn">×</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <span class="detail-value">€@(item.Product.Price * item.Quantity)</span>
+                        </div>
+                    }
+                    <div class="detail-item" style="margin-top: 1rem; border-top: 1px solid var(--color-accent);">
+                        <span class="detail-label">Total</span>
+                        <span class="detail-value">€@Model.Sum(i => i.Product.Price * i.Quantity)</span>
+                    </div>
+                    <div class="profile-actions" style="margin-top: 1rem;">
+                        <form asp-action="Checkout" method="post">
+                            <button type="submit" class="btn-highlight">Finalizar Compra</button>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="details-card">
+                    <p class="detail-label" style="text-align: center;">Seu carrinho está vazio</p>
+                </div>
+            }
+
+            @if (orders.Any())
+            {
+                <div class="details-card" style="margin-top: 2rem;">
+                    <h3>Histórico de Compras</h3>
+                    @foreach (var order in orders)
+                    {
+                        <div class="detail-item" style="flex-direction: column;">
+                            <div style="display: flex; justify-content: space-between; width: 100%;">
+                                <span class="detail-label">Pedido #@order.OrderId - @order.OrderDate.ToString("dd/MM/yyyy")</span>
+                                <span class="detail-value">€@order.TotalAmount</span>
+                            </div>
+                            <div style="margin-left: 1rem; margin-top: 0.5rem;">
+                                @foreach (var item in order.OrderItems)
+                                {
+                                    <div style="display: flex; justify-content: space-between; color: var(--color-muted);">
+                                        <span>@item.Product.Name x @item.Quantity</span>
+                                        <span>€@(item.Price * item.Quantity)</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>

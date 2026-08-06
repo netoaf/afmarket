@@ -1,0 +1,58 @@
+@model AFMarket.Models.User
+
+@{
+    ViewData["Title"] = "Editar Perfil";
+}
+
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            <div class="avatar-placeholder">
+                @Model.Username.Substring(0, 1).ToUpper()
+            </div>
+        </div>
+        <h1 class="profile-name">Editar Perfil</h1>
+        <p class="profile-bio">Atualize suas informações pessoais</p>
+    </div>
+
+    <div class="profile-content">
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["Message"]
+            </div>
+        }
+
+        <div class="profile-details">
+            <div class="details-card">
+                <h3>Informações da Conta</h3>
+                <form asp-action="Edit" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="UserId" asp-validation-for="UserId" />
+                    <div class="edit-field">
+                        <label for="Username" class="edit-label">Nome de Usuário</label>
+                        <input asp-for="Username" class="edit-input" />
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+
+                    <div class="edit-field">
+                        <label for="Email" class="edit-label">Email</label>
+                        <input asp-for="Email" class="edit-input" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="edit-field">
+                        <label for="newPassword" class="edit-label">Nova senha (opcional)</label>
+                        <input id="newPassword" name="newPassword" class="edit-input" type="password"
+                               minlength="8" autocomplete="new-password" />
+                    </div>
+
+                    <div class="profile-actions">
+                        <button type="submit" class="btn-highlight">SALVAR ALTERAÇÕES</button>
+                        <a asp-action="Profile" class="btn-secondary">CANCELAR</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

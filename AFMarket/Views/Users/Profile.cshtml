@@ -1,0 +1,82 @@
+@model AFMarket.Models.User
+
+@{
+    ViewData["Title"] = "Profile";
+}
+
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <div class="avatar-placeholder">
+                    @Model.Username.Substring(0, 1).ToUpper()
+                </div>
+            </div>
+            <h1 class="profile-name">@Model.Username</h1>
+            <p class="profile-bio">Membro desde @Model.RegistrationDate.ToString("MMMM yyyy")</p>
+        </div>
+
+        <div class="profile-content">
+            @if (TempData["Message"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["Message"]
+                </div>
+            }
+
+            <div class="profile-balance-section">
+                <div class="balance-card">
+                    <div class="balance-header">
+                        <span class="balance-title">SEU SALDO</span>
+                        <span class="balance-amount">@Model.Balance.ToString("C2")</span>
+                    </div>
+                    <div class="balance-form">
+                        <form asp-action="AddBalance" method="post" class="add-balance">
+                            <div class="quantity-control">
+                                <button type="button" class="quantity-btn" onclick="decrementAmount(this)">-</button>
+                                <input type="number" name="amount" value="10" min="5" class="quantity-input" />
+                                <button type="button" class="quantity-btn" onclick="incrementAmount(this)">+</button>
+                            </div>
+                            <button type="submit" class="btn-highlight">Adicionar Saldo</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-details">
+                <div class="details-card">
+                    <h3>Informações da Conta</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Nome de Usuário</span>
+                        <span class="detail-value">@Model.Username</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Email</span>
+                        <span class="detail-value">@Model.Email</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <a asp-action="Edit" asp-route-id="@Model.UserId" class="btn-highlight">EDITAR PERFIL</a>
+                <a asp-action="Cart" asp-controller="CartItems" class="btn-secondary">VER CARRINHO</a>
+            </div>
+        </div>
+    </div>
+
+<script>
+    function incrementAmount(btn) {
+        var input = btn.parentElement.querySelector('.quantity-input');
+        var value = parseInt(input.value);
+        if (isNaN(value)) value = 0;
+        input.value = value + 5;
+    }
+
+    function decrementAmount(btn) {
+        var input = btn.parentElement.querySelector('.quantity-input');
+        var value = parseInt(input.value);
+        if (isNaN(value)) value = 10;
+        if (value > 5) {
+            input.value = value - 5;
+        }
+    }
+</script>

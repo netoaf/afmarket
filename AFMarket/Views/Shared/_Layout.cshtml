@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <title>AFMarket - @ViewBag.Title</title>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header-area header-sticky">
+        <div class="container">
+            <nav class="main-nav">
+                <a href="~/Home/Index" class="logo">AFMarket</a>
+
+                <ul class="nav">
+                    <li><a class="nav-link" asp-controller="Products" asp-action="Index">Products</a></li>
+                    @if (Context.Session.GetString("UserId") != null)
+                    {
+                        @if (Context.Session.GetString("UserRole") == "Admin")
+                        {
+                            <li><a class="nav-link" asp-controller="Products" asp-action="Create">Add Product</a></li>
+                            <li><a class="nav-link" asp-controller="Users" asp-action="Index">Users</a></li>
+                        }
+                        <li><a class="nav-link" asp-controller="CartItems" asp-action="Cart">Cart</a></li>
+                        <li>
+                            <a class="nav-link" asp-controller="Users" asp-action="Profile">Profile</a>
+                        </li>
+                        <li>
+                            <a class="nav-link btn-highlight" asp-controller="Users" asp-action="Logout">Logout</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            <a class="nav-link btn-highlight" asp-controller="Users" asp-action="Login">Login</a>
+                        </li>
+                        <li>
+                            <a class="nav-link btn-highlight" asp-controller="Users" asp-action="Register">Register</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <!-- Conteúdo Principal -->
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Rodapé -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 AFMarket. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts (caso precise) -->
+    <script src="~/js/site.js"></script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

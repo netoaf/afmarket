@@ -1,0 +1,19 @@
+## .NET build output
+bin/
+obj/
+
+## Visual Studio
+.vs/
+*.user
+*.suo
+
+## Local configuration and databases
+appsettings.Local.json
+*.mdf
+*.ldf
+
+## OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

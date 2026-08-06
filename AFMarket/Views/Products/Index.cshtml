@@ -1,0 +1,127 @@
+@model IEnumerable<AFMarket.Models.Product>
+
+@{
+    ViewBag.Title = "Products";
+}
+
+<div class="container">
+    <h2>Available Products</h2>
+    <p>Explore our curated selection of high-quality products.</p>
+
+    <div class="search-filter-container">
+        <form method="get" asp-controller="Products" asp-action="Index" class="search-filter-form">
+
+            <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="search-input" placeholder="🔍 Procurar produtos..." />
+
+            <select name="categoryId" class="category-select">
+                <option value="">Todas as categorias</option>
+                @foreach (var cat in ViewBag.Categories)
+                {
+                    <option value="@cat.CategoryId" selected="@(ViewBag.SelectedCategory == cat.CategoryId)">
+                        @cat.Name
+                    </option>
+                }
+            </select>
+            @if (Context.Session.GetString("UserId") != null)
+            {
+                <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--color-text);">
+                    <input type="checkbox" name="favoritos" value="true" @(ViewBag.MostrarFavoritos == true ? "checked" : "") />
+                    Apenas favoritos
+                </label>
+            }
+            <button type="submit" class="btn-highlight">Filtrar</button>
+        </form>
+
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="products-grid">
+        @if (Model.Any())
+        {
+            @foreach (var item in Model)
+            {
+                <div class="product-item">
+
+                    <img src="~/images/@(item.Name).png" alt="@item.Name" class="product-image" />
+                    <h3>@item.Name</h3>
+                    <p class="price">€@item.Price.ToString("F2")</p>
+
+                    @if (item.Stock > 0)
+                    {
+                        <form asp-action="AddToCart" asp-controller="Products" method="post" class="product-form">
+                            <input type="hidden" name="productId" value="@item.ProductId" />
+                            <div class="quantity-control">
+                                <button type="button" class="quantity-btn" onclick="decrementQuantity(this)">-</button>
+                                <input type="number" name="quantity" value="1" min="1" class="quantity-input" />
+                                <button type="button" class="quantity-btn" onclick="incrementQuantity(this)">+</button>
+                            </div>
+                            <button type="submit" class="btn-cart">Add to Cart</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <p class="out-of-stock">Fora de Stock</p>
+                    }
+                    @if (Context.Session.GetString("UserId") != null)
+                    {
+
+                        <form method="post" asp-action="ToggleFavorite" asp-controller="Products" class="favorite-form">
+                            <input type="hidden" name="productId" value="@item.ProductId" />
+                            <button type="submit" class="no-style-button" title="Favorito">
+                                @if (ViewBag.Favorites != null && ViewBag.Favorites.Contains(item.ProductId))
+
+                                {
+
+                                    <span class="star-active">★</span>
+
+                                }
+
+                                else
+
+                                {
+
+                                    <span class="star-inactive">☆</span>
+
+                                }
+                            </button>
+                        </form>
+                    }
+                </div>
+
+            }
+
+
+        }
+        else
+        {
+            <div class="no-results">
+                <p>Nenhum produto encontrado com os filtros atuais.</p>
+                <a asp-action="Index" class="btn-secondary">Ver Todos os Produtos</a>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function incrementQuantity(btn) {
+        var input = btn.parentElement.querySelector('.quantity-input');
+        var value = parseInt(input.value);
+        if (isNaN(value)) value = 0;
+        input.value = value + 1;
+    }
+
+    function decrementQuantity(btn) {
+        var input = btn.parentElement.querySelector('.quantity-input');
+        var value = parseInt(input.value);
+        if (isNaN(value)) value = 2;
+        if (value > 1) {
+            input.value = value - 1;
+        }
+    }
+</script>
