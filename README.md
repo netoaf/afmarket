@@ -1,69 +1,81 @@
-# AFMarket
+<h1 align="center">AFMarket</h1>
 
-AFMarket is an academic marketplace prototype built with ASP.NET Core MVC and
-SQL Server. It covers the complete flow from browsing a catalogue to placing a
-simulated order.
+<p align="center">
+  <strong>A full marketplace flow in ASP.NET Core MVC: browse, filter, cart, pay, track.</strong><br>
+  Every euro and every unit of stock moves inside a database transaction.
+</p>
 
-I developed this project independently, using AI tools as development support.
-It is presented as a learning and portfolio project, not as a production
-e-commerce platform.
+<p align="center">
+  <a href="https://github.com/netoaf/afmarket/actions/workflows/ci.yml"><img src="https://github.com/netoaf/afmarket/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/.NET_8-512BD4?logo=dotnet&logoColor=white" alt=".NET 8">
+  <img src="https://img.shields.io/badge/C%23-239120?logo=csharp&logoColor=white" alt="C#">
+  <img src="https://img.shields.io/badge/EF_Core-512BD4?logo=dotnet&logoColor=white" alt="EF Core">
+  <img src="https://img.shields.io/badge/SQL_Server-CC2927?logo=microsoftsqlserver&logoColor=white" alt="SQL Server">
+</p>
 
-## What is implemented
+<p align="center">
+  <img src="docs/demo.gif" alt="Registering, filtering the catalogue, filling the cart and checking out" width="720">
+</p>
 
-- Product catalogue with search and category filters
-- User registration, login, profile editing and session management
-- Password hashing with ASP.NET Core's `PasswordHasher`
-- Favourites and a per-user shopping cart
-- Quantity and stock validation
-- Simulated account balance and transaction history
-- Transactional checkout, order history and stock updates
-- Admin-only product and user management screens
-- SQL Server relational model for users, products, categories, carts, orders,
-  order items, transactions, favourites and promotions
+<p align="center"><sub>Recorded on a local demo database: register, filter, add to cart, check out, balance drops from €100.00 to €96.60. <a href="docs/demo.mp4">Video</a>.</sub></p>
 
-## Technology
+## The flow
 
-- C# and .NET 8
-- ASP.NET Core MVC
-- Entity Framework Core
-- SQL Server / SQL LocalDB
-- Razor, HTML, CSS and JavaScript
+<table>
+  <tr>
+    <td><img src="docs/catalogue.jpg" alt="Product catalogue with search and category filter"></td>
+    <td><img src="docs/cart.jpg" alt="Shopping cart with quantities and total"></td>
+    <td><img src="docs/profile.jpg" alt="Profile showing the updated balance after checkout"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>1. Search and filter</sub></td>
+    <td align="center"><sub>2. Cart with live totals</sub></td>
+    <td align="center"><sub>3. Balance after checkout</sub></td>
+  </tr>
+</table>
 
-## Run locally
+## What it does
 
-Requirements:
+**For shoppers.** Catalogue with search, category filter and favourites. Per-user
+cart with stock-aware quantities. Simulated wallet, one-click checkout and order
+history.
 
-- .NET 8 SDK
-- SQL Server LocalDB or another SQL Server instance
+**For admins.** Create, edit and remove products. Manage user accounts.
 
-1. Run `database/reset-demo-database.sql` against a local SQL Server instance.
-   The script is intentionally destructive **only for the database named
-   `AFMarketDB`**.
-2. If you are not using LocalDB, override the `DefaultConnection` connection
-   string with user secrets, an environment variable, or
-   `appsettings.Local.json`.
-3. Start the application:
+**Behind it.** A relational SQL Server model with nine entities: users, products,
+categories, cart items, orders, order items, transactions, favourites and
+promotions. Checkout validates stock and balance, then writes the order, debits the
+wallet and decrements stock in a single transaction. Either everything happens or
+nothing does.
 
-   ```powershell
-   dotnet restore
-   dotnet run --project AFMarket/AFMarket.csproj
-   ```
+## Security choices
 
-4. Register a user through the web interface. New demo users receive a
-   simulated starting balance of 100.
+- Passwords hashed with ASP.NET Core `PasswordHasher`
+- Anti-forgery tokens validated on every state change
+- Cart operations scoped to the session owner
+- Management screens restricted to admin sessions
+- No credentials in the repository; connection string comes from config
 
-To test the admin screens locally, promote a registered account using the
-commented query at the end of the database script.
+## Run it
 
-## Security and scope
+Requires the .NET 8 SDK and SQL Server (LocalDB is enough).
 
-The public version removes machine-specific credentials from the original
-school prototype, hashes passwords, validates anti-forgery tokens on state
-changes, restricts cart operations to their owner and limits management actions
-to an admin session.
+```powershell
+# 1. Create the demo database (drops and recreates only AFMarketDB)
+sqlcmd -S "(localdb)\MSSQLLocalDB" -i database/reset-demo-database.sql
 
-Authentication is still a small custom session-based implementation. Payments
-and balance top-ups are simulations, concurrent checkout has not been
-stress-tested, and the project has no automated test suite yet. A production
-version should use ASP.NET Core Identity, migrations, stronger authorization,
-structured logging and integration tests.
+# 2. Start the app
+dotnet run --project AFMarket/AFMarket.csproj
+```
+
+Register an account to receive a €100 demo balance. To reach the admin screens,
+promote that account with the query at the end of the SQL script. For a different
+SQL Server, override `ConnectionStrings:DefaultConnection` with user secrets or an
+environment variable.
+
+## Honest scope
+
+A school project, built independently with AI as a development aid. Payments are
+simulated and authentication is a small session-based layer. A production version
+would move to ASP.NET Core Identity, EF migrations, policy-based authorization and
+integration tests.
