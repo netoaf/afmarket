@@ -1,0 +1,121 @@
+@model IEnumerable<refeitorio.ViewModels.WeeklyMenuItemViewModel>
+@{
+    ViewData["Title"] = "Gestão de Menu Semanal";
+    var dayNames = new Dictionary<DayOfWeek, string>
+    {
+        [DayOfWeek.Sunday] = "Domingo",
+        [DayOfWeek.Monday] = "Segunda-feira",
+        [DayOfWeek.Tuesday] = "Terça-feira",
+        [DayOfWeek.Wednesday] = "Quarta-feira",
+        [DayOfWeek.Thursday] = "Quinta-feira",
+        [DayOfWeek.Friday] = "Sexta-feira",
+        [DayOfWeek.Saturday] = "Sábado"
+    };
+}
+<style>
+    * {
+        color: white !important;
+    }
+</style>
+<div class="row mb-4">
+    <div class="col">
+        <h2>Gestão de Menu Semanal</h2>
+    </div>
+    <div class="col text-end">
+        <a asp-action="CreateWeeklyMenuItem" class="btn btn-success">Novo Item do Menu</a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <h5>Nenhum item do menu configurado</h5>
+        <p>Comece por adicionar itens ao menu semanal.</p>
+        <a asp-action="CreateWeeklyMenuItem" class="btn btn-primary">Criar Primeiro Item</a>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th >Data</th>
+                            <th >Dia da Semana</th>
+                            <th >Tipo</th>
+                            <th >Preço</th>
+                            <th >Vagas</th>
+                            <th >Produtos</th>
+                            <th >Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var menuItem in Model)
+                        {
+                            var productsObj = ViewBag.ProductsDict != null && ViewBag.ProductsDict.ContainsKey(menuItem.Id)
+                                ? ViewBag.ProductsDict[menuItem.Id]
+                                : null;
+                            var products = (productsObj as List<refeitorio.ViewModels.ProductViewModel>) ?? new List<refeitorio.ViewModels.ProductViewModel>();
+                            <tr>
+                                <td ><strong>@menuItem.MenuDate.ToString("dd/MM/yyyy")</strong></td>
+                                <td >@dayNames[menuItem.DayOfWeek]</td>
+                                <td>
+                                    @if (menuItem.IsVegetarian)
+                                    {
+                                        <span class="badge bg-success">Vegetariano</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-primary">Regular</span>
+                                    }
+                                </td>
+                                <td ><strong>€@menuItem.Price.ToString("F2")</strong></td>
+                                <td ><span class="badge bg-info">@menuItem.MaxTickets</span></td>
+                                <td >
+                                    @if (products.Any())
+                                    {
+                                        <ul class="list-unstyled mb-0">
+                                            @foreach (var product in products)
+                                            {
+                                                <li>• @product.Name</li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Sem produtos</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="EditWeeklyMenuItem" asp-route-id="@menuItem.Id" class="btn btn-sm btn-primary">Editar</a>
+                                    <form method="post" asp-action="DeleteWeeklyMenuItem" asp-route-id="@menuItem.Id" style="display: inline;" onsubmit="return confirm('Tem a certeza que deseja eliminar este item do menu?');">
+                                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+

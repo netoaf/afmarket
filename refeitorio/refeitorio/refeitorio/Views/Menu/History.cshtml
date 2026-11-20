@@ -1,0 +1,77 @@
+@model IEnumerable<refeitorio.ViewModels.TicketViewModel>
+@{
+    ViewData["Title"] = "Histórico de Marcações";
+    var dayNames = new Dictionary<DayOfWeek, string>
+            {
+                [DayOfWeek.Monday] = "Segunda-feira",
+                [DayOfWeek.Tuesday] = "Terça-feira",
+                [DayOfWeek.Wednesday] = "Quarta-feira",
+                [DayOfWeek.Thursday] = "Quinta-feira",
+                [DayOfWeek.Friday] = "Sexta-feira",
+                [DayOfWeek.Saturday] = "Sábado",
+                [DayOfWeek.Sunday] = "Domingo"
+            };
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h2>Histórico de Marcações</h2>
+        @if (!string.IsNullOrEmpty((string)ViewBag.StudentName))
+        {
+            <p class="text-muted mb-0">Aluno: <strong>@ViewBag.StudentName</strong></p>
+        }
+    </div>
+    <div class="col-auto">
+        <a asp-action="Index" asp-controller="Menu" class="btn btn-secondary">Voltar ao Menu</a>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        Ainda não tem marcações de almoço registadas.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Dia da Semana</th>
+                    <th>Tipo</th>
+                    <th>Data da Refeição</th>
+                    <th>Data da Compra</th>
+                    <th>Preço</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ticket in Model)
+                {
+                    <tr>
+                        <td>@dayNames[ticket.DayOfWeek]</td>
+                        <td>@(ticket.IsVegetarian ? "Vegetariano" : "Regular")</td>
+                        <td>@(ticket.Menu != null ? ticket.Menu.MenuDate.ToString("dd/MM/yyyy") : "N/A")</td>
+                        <td>@ticket.ReservationDate.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>€@ticket.Price.ToString("F2")</td>
+                        <td>
+                            @if (ticket.Status == "Comprado")
+                            {
+                                <span class="badge bg-success">Comprado</span>
+                            }
+                            else if (ticket.Status == "Reservado")
+                            {
+                                <span class="badge bg-primary">Reservado</span>
+                            }
+                            else if (ticket.Status == "Expirado")
+                            {
+                                <span class="badge bg-secondary">Expirado</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

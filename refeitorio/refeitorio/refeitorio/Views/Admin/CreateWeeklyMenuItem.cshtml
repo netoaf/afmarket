@@ -1,0 +1,125 @@
+@model refeitorio.ViewModels.WeeklyMenuItemViewModel
+@{
+    ViewData["Title"] = "Criar Item do Menu";
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h2>Criar Novo Item do Menu Semanal</h2>
+    </div>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" asp-action="CreateWeeklyMenuItem">
+            <div class="mb-3">
+                <label class="form-label">Data do Menu</label>
+                <input type="date" name="MenuDate" class="form-control" 
+                       value="@(Model?.MenuDate.ToString("yyyy-MM-dd") ?? DateTime.Today.ToString("yyyy-MM-dd"))" 
+                       min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                <small class="text-muted">Selecione a data exata para este menu</small>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="IsVegetarian" class="form-check-input" id="isVegetarian" value="true" onchange="filterProducts()" />
+                <label class="form-check-label" for="isVegetarian">
+                    Menu Vegetariano
+                </label>
+                <small class="form-text text-muted d-block">Quando marcado, apenas produtos vegetarianos serão mostrados</small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Preço do Almoço (€)</label>
+                <input type="number" name="Price" class="form-control" step="0.10" min="0" required />
+                <small class="text-muted">Preço total do almoço completo para este dia</small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Vagas Disponíveis</label>
+                <input type="number" name="MaxTickets" class="form-control" value="150" min="1" max="500" required />
+                <small class="text-muted">Número máximo de tickets que podem ser vendidos para este menu</small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Produtos</label>
+                <p class="text-muted small">Selecione os produtos que fazem parte deste menu (pode selecionar múltiplos)</p>
+                <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;" id="productsContainer">
+                    @if (ViewBag.Products != null && ((List<refeitorio.ViewModels.ProductViewModel>)ViewBag.Products).Any())
+                    {
+                        @foreach (var product in (List<refeitorio.ViewModels.ProductViewModel>)ViewBag.Products)
+                        {
+                            var isVegetarian = product.IsVegetarian;
+                            <div class="form-check mb-2 product-item" data-vegetarian="@isVegetarian.ToString().ToLower()">
+                                <input class="form-check-input" type="checkbox" name="productIds" value="@product.Id" id="product_@product.Id" />
+                                <label class="form-check-label" for="product_@product.Id">
+                                    <strong>@product.Name</strong> - @product.Description (€@product.Price.ToString("F2"))
+                                    @if (isVegetarian)
+                                    {
+                                        <span class="badge bg-success ms-2">Vegetariano</span>
+                                    }
+                                </label>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">Nenhum produto de refeição disponível. Crie produtos na categoria "Refeições" primeiro.</p>
+                    }
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">Guardar</button>
+                <a asp-action="WeeklyMenu" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function filterProducts() {
+            const isVegetarian = document.getElementById('isVegetarian');
+            if (!isVegetarian) return;
+
+            const isChecked = isVegetarian.checked;
+            const productItems = document.querySelectorAll('.product-item');
+
+            productItems.forEach(item => {
+                const itemIsVegetarian = item.getAttribute('data-vegetarian') === 'true';
+                const checkbox = item.querySelector('input[type="checkbox"]');
+
+                if (isChecked) {
+                    // Ocultar produtos não vegetarianos
+                    if (!itemIsVegetarian) {
+                        item.style.display = 'none';
+                        // ❌ Desmarcar o checkbox se o produto não for vegetariano
+                        checkbox.checked = false;
+                    } else {
+                        item.style.display = 'block';
+                    }
+                } else {
+                    // Mostrar todos os produtos no modo regular
+                    item.style.display = 'block';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const isVegetarian = document.getElementById('isVegetarian');
+            if (isVegetarian) {
+                isVegetarian.addEventListener('change', filterProducts);
+                // Aplica filtro inicial se já estiver marcado
+                if (isVegetarian.checked) filterProducts();
+            }
+        });
+    </script>
+}
