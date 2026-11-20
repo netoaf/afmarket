@@ -1,38 +1,52 @@
-# Refeitório — school cafeteria system
+# Refeitório
 
-A two-project ASP.NET Core system for a school cafeteria: students browse the menu and products, keep a cart, reserve weekly meal tickets and manage a balance; staff and admins manage products, categories, the weekly menu and users.
+**A school cafeteria system in ASP.NET Core: students order and reserve meals, staff run the counter, admins manage the menu. Two projects, strict layers.**
 
-Built by me, alone, as a school project (.NET 8, EF Core, SQL Server). A companion Windows Forms back-office app for teachers, students and grades (written by a classmate) talked to this API through API keys; it is not part of this repository.
+<p align="center">
+  <a href="https://github.com/netoaf/afmarket/actions/workflows/ci.yml"><img src="https://github.com/netoaf/afmarket/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/.NET_8-512BD4?logo=dotnet&logoColor=white" alt=".NET 8">
+  <img src="https://img.shields.io/badge/C%23-239120?logo=csharp&logoColor=white" alt="C#">
+  <img src="https://img.shields.io/badge/EF_Core-512BD4?logo=dotnet&logoColor=white" alt="EF Core">
+  <img src="https://img.shields.io/badge/SQL_Server-CC2927?logo=microsoftsqlserver&logoColor=white" alt="SQL Server">
+</p>
+
+Built alone as a school project. The presentation layer never touches the database: it only talks to a Web API, which owns the business rules and the data.
 
 ## Architecture
 
+```mermaid
+flowchart LR
+    B[Browser] --> M[MVC app: Razor views and ViewModels]
+    M -- HTTP --> A[Web API: controllers, DTOs, services, repositories]
+    A --> D[(SQL Server: EF Core and migrations)]
 ```
-Browser -> MVC app (Razor, ViewModels only) -> HTTP -> Web API (services, repositories, EF Core) -> SQL Server
-```
 
-- `refeitorio/` — ASP.NET Core MVC front end. No database access; it only calls the API.
-- `Refeitorio_API/` — Web API: controllers, DTOs, services, repositories, domain models, EF Core migrations.
-- `RefeitorioDB.sql` — schema and demo seed data.
-- `TECHNICAL_DECISIONS.md` — why the layers are split this way.
-- `LIMITATIONS.md` — what is missing and what I would do next.
+| Project | Role |
+|---|---|
+| `refeitorio/` | ASP.NET Core MVC front end. No database access, ViewModels only. |
+| `Refeitorio_API/` | Web API with services, repositories, domain models, DTOs and EF Core migrations. |
+| `RefeitorioDB.sql` | Schema and demo seed data. |
 
-## Features
+Why it is split this way is explained in [`TECHNICAL_DECISIONS.md`](TECHNICAL_DECISIONS.md).
 
-- Products with categories, search, vegetarian flag and nutrition info
-- Weekly menu (regular and vegetarian) and meal-ticket reservations
-- Cart, orders, order history, favourites, balance
-- Roles: Student, Staff, Admin (admin and staff screens for products, categories, menu, users)
+## What each role can do
 
-## Security notes
+| Role | Features |
+|---|---|
+| **Student** | Browse products with search and category filter, vegetarian flag, nutrition and allergens. Cart, orders and order history, favourites. Weekly menu and meal-ticket reservations. Profile and balance. |
+| **Staff** | Manage products and categories. See incoming orders and order history. |
+| **Admin** | Everything staff can do, plus student accounts and the weekly menu. |
+
+## Security choices
 
 - Passwords are hashed with ASP.NET Core Identity `PasswordHasher`; no plain-text passwords in code or seed data.
-- Public registration always creates a Student; the client cannot choose a role.
+- Public registration always creates a Student. The client cannot choose its own role.
 - Connection strings contain no credentials (Windows authentication).
-- Known gap: the API itself does not yet require a token (see `LIMITATIONS.md`).
+- Known gap: the API itself does not yet require a token. See [`LIMITATIONS.md`](LIMITATIONS.md).
 
 ## Run it
 
-Requires the .NET 8 SDK and SQL Server (Express or LocalDB). See `SETUP.md`.
+Requires the .NET 8 SDK and SQL Server (Express or LocalDB). Full steps in [`SETUP.md`](SETUP.md).
 
 ```powershell
 sqlcmd -S ".\SQLEXPRESS" -f 65001 -i RefeitorioDB.sql
@@ -40,10 +54,8 @@ dotnet run --project Refeitorio_API/WebApplication1   # https://localhost:7091
 dotnet run --project refeitorio/refeitorio            # https://localhost:7073
 ```
 
-Demo accounts (local only): `admin`, `student`, `func`, all with password `Demo-2026!`.
-
-These accounts exist only in the demo seed script. Delete them before any real deployment.
+Demo accounts (local only): `admin`, `student`, `func`, all with password `Demo-2026!`. These accounts exist only in the demo seed script. Delete them before any real deployment.
 
 ## Honest scope
 
-School project. No automated tests yet; product photos are not included in this repository. A production version would add API authentication, tests, and a CI pipeline.
+A school project, built independently. There are no automated tests yet, the API has no authentication, and sessions live on the server. A production version would add token auth, tests for the order and balance logic, and environment-based configuration. The CI workflow in this repository builds both solutions on every push. A companion Windows Forms back-office app for teachers and grades, written by a classmate, talked to this API with API keys and is not part of this repository.
