@@ -58,4 +58,4 @@ Demo accounts (local only): `admin`, `student`, `func`, all with password `Demo-
 
 ## Honest scope
 
-A school project, built independently. There are no automated tests yet, the API has no authentication, and sessions live on the server. A production version would add token auth, tests for the order and balance logic, and environment-based configuration. The CI workflow in this repository builds both solutions on every push. A companion Windows Forms back-office app for teachers and grades, written by a classmate, talked to this API with API keys and is not part of this repository.
+A school project, built independently. There are no automated tests yet, the API has no authentication, and sessions live on the server. A production version would add token auth, tests for the order and balance logic, and environment-based configuration. The CI workflow in this repository builds both solutions on every push.
