@@ -1,0 +1,240 @@
+@model refeitorio.ViewModels.WeeklyMenuViewModel
+@{
+    ViewData["Title"] = "Menu Semanal";
+    var daysOfWeek = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday };
+    var dayNames = new Dictionary<DayOfWeek, string>
+    {
+        [DayOfWeek.Monday] = "Segunda-feira",
+        [DayOfWeek.Tuesday] = "Terça-feira",
+        [DayOfWeek.Wednesday] = "Quarta-feira",
+        [DayOfWeek.Thursday] = "Quinta-feira",
+        [DayOfWeek.Friday] = "Sexta-feira"
+    };
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h2>Menu Semanal</h2>
+    </div>
+    <div class="col-auto d-flex align-items-center gap-2">
+        <a asp-action="History" asp-controller="Menu" class="btn btn-outline-secondary">
+            Ver histórico de marcações
+        </a>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="vegetarianToggle" @(Model.ShowVegetarian ? "checked" : "") onchange="toggleMenu()">
+            <label class="form-check-label" for="vegetarianToggle">
+                Menu Vegetariano
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- Navegação por semanas -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded">
+            <a asp-action="Index" asp-route-vegetarian="@Model.ShowVegetarian" 
+               asp-route-weekStart="@Model.WeekStart.AddDays(-7).ToString("yyyy-MM-dd")" 
+               class="btn btn-outline-primary @(Model.WeekStart <= Model.CurrentWeekStart ? "disabled" : "")">
+                ← Semana Anterior
+            </a>
+            
+            <div class="text-center">
+                <h5 class="mb-0">
+                    @if (Model.WeekStart.Date == Model.CurrentWeekStart.Date)
+                    {
+                        <span class="badge bg-success">Esta Semana</span>
+                    }
+                    else
+                    {
+                        <span>Semana de @Model.WeekStart.ToString("dd/MM") a @Model.WeekStart.AddDays(4).ToString("dd/MM/yyyy")</span>
+                    }
+                </h5>
+            </div>
+            
+            <a asp-action="Index" asp-route-vegetarian="@Model.ShowVegetarian" 
+               asp-route-weekStart="@Model.WeekStart.AddDays(7).ToString("yyyy-MM-dd")" 
+               class="btn btn-outline-primary">
+                Próxima Semana
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (Model.ShowVegetarian)
+{
+    <div class="alert alert-success mb-4">
+        <strong>Menu Vegetariano Ativo</strong> - Está a visualizar a versão vegetariana do menu semanal.
+    </div>
+}
+else
+{
+    <div class="alert alert-info mb-4">
+        <strong>Menu Regular</strong> - Clique no botão acima para ver a versão vegetariana.
+    </div>
+}
+
+<div class="alert alert-info mb-4">
+    <strong>Informações Importantes:</strong><br>
+    <small>• Compra permitida até às <strong>10:00</strong> do próprio dia<br>
+    • Cancelamento permitido até às <strong>09:30</strong> do próprio dia<br>
+    • O valor será devolvido ao cancelar</small>
+</div>
+
+<div class="row g-4">
+    @foreach (var day in daysOfWeek)
+    {
+        var menu = Model.ShowVegetarian ? Model.VegetarianMenu : Model.RegularMenu;
+        var menuItem = menu.ContainsKey(day) ? menu[day] : null;
+        
+        var hasTicket = Model.HasTicket.ContainsKey(day) && Model.HasTicket[day];
+        var targetDate = Model.WeekStart.AddDays((int)day - (int)DayOfWeek.Monday);
+        var isPastDay = targetDate.Date < DateTime.Today;
+        var canBuy = !isPastDay && ViewBag.CanBuy != null && ((Dictionary<DayOfWeek, bool>)ViewBag.CanBuy).ContainsKey(day) ? ((Dictionary<DayOfWeek, bool>)ViewBag.CanBuy)[day] : false;
+        var canCancel = !isPastDay && ViewBag.CanCancel != null && ((Dictionary<DayOfWeek, bool>)ViewBag.CanCancel).ContainsKey(day) ? ((Dictionary<DayOfWeek, bool>)ViewBag.CanCancel)[day] : false;
+        
+        <div class="col-12 col-lg-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">@dayNames[day]</h5>
+                </div>
+                <div class="card-body">
+                    @if (menuItem == null)
+                    {
+                        <div class="alert alert-warning text-center">
+                            <strong>Menu ainda não disponível</strong><br>
+                            <small>O menu para este dia ainda não foi definido.</small>
+                        </div>
+                    }
+                    else
+                    {
+                        var products = ViewBag.MenuProducts.ContainsKey(day) && 
+                            ViewBag.MenuProducts[day] != null ? 
+                            (List<refeitorio.ViewModels.ProductViewModel>)ViewBag.MenuProducts[day] : new List<refeitorio.ViewModels.ProductViewModel>();
+
+                    <h6 class="text-primary mb-3">Almoço Completo</h6>
+                    
+                    @if (menuItem != null)
+                    {
+                        <div class="mb-3">
+                            <p class="text-muted small mb-2">Este almoço inclui:</p>
+                            <ul class="list-unstyled">
+                                @if (menuItem.MainDish != null)
+                                {
+                                    <li>• <span class="badge bg-danger">Prato Principal</span> <strong>@menuItem.MainDish.Name</strong> - @menuItem.MainDish.Description</li>
+                                }
+                                @if (menuItem.Soup != null)
+                                {
+                                    <li>• <span class="badge bg-success">Sopa</span> <strong>@menuItem.Soup.Name</strong> - @menuItem.Soup.Description</li>
+                                }
+                                @if (menuItem.Dessert != null)
+                                {
+                                    <li>• <span class="badge bg-warning text-dark">Sobremesa</span> <strong>@menuItem.Dessert.Name</strong> - @menuItem.Dessert.Description</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="badge bg-success fs-6">€@menuItem.Price.ToString("F2")</span>
+                        </div>
+                    </div>
+
+                    @if (hasTicket)
+                    {
+                        <div class="alert alert-success mb-2">
+                            <strong>Ticket Comprado</strong><br>
+                            <small>Já possui ticket para o almoço deste dia.</small>
+                        </div>
+                        
+                        @if (canCancel)
+                        {
+                            <form method="post" asp-action="CancelTicket" class="ajax-form" onsubmit="return confirm('Tem a certeza de que deseja cancelar o ticket? O valor será devolvido.');">
+                                <input type="hidden" name="dayOfWeek" value="@day" />
+                                <input type="hidden" name="isVegetarian" value="@(Model.ShowVegetarian ? "true" : "false")" />
+                                <input type="hidden" name="weekStart" value="@Model.WeekStart.ToString("yyyy-MM-dd")" />
+                                <button type="submit" class="btn btn-danger w-100">
+                                    Cancelar Ticket (até 09:30)
+                                </button>
+                            </form>
+                        }
+                        else if (isPastDay)
+                        {
+                            <div class="alert alert-secondary mb-0">
+                                <small>Este ticket já expirou.</small>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning mb-0">
+                                <small>O cancelamento só é permitido até às 09:30 do próprio dia.</small>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        @if (canBuy)
+                        {
+                            <form method="post" asp-action="BuyTicket" class="ajax-form">
+                                <input type="hidden" name="dayOfWeek" value="@day" />
+                                <input type="hidden" name="isVegetarian" value="@(Model.ShowVegetarian ? "true" : "false")" />
+                                <input type="hidden" name="weekStart" value="@Model.WeekStart.ToString("yyyy-MM-dd")" />
+                                <button type="submit" class="btn btn-primary w-100">
+                                    Comprar Almoço Completo
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            var hasOtherTypeTicket = ViewBag.HasOtherTypeTicket != null && ((Dictionary<DayOfWeek, bool>)ViewBag.HasOtherTypeTicket).ContainsKey(day) && ((Dictionary<DayOfWeek, bool>)ViewBag.HasOtherTypeTicket)[day];
+                            var existingTicketType = ViewBag.ExistingTicketType != null && ((Dictionary<DayOfWeek, string>)ViewBag.ExistingTicketType).ContainsKey(day) ? ((Dictionary<DayOfWeek, string>)ViewBag.ExistingTicketType)[day] : "";
+                            
+                            @if (hasOtherTypeTicket)
+                            {
+                                <div class="alert alert-info mb-0">
+                                    <strong>Já possui ticket para este dia</strong><br>
+                                    <small>Já tem um ticket @existingTicketType comprado para este dia.</small>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning mb-0">
+                                    <strong>Compra não disponível</strong><br>
+                                    <small>A compra só é permitida até às 10:00 do próprio dia.</small>
+                                </div>
+                            }
+                        }
+                    }
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function toggleMenu() {
+            const isVegetarian = document.getElementById('vegetarianToggle').checked;
+            const weekStart = '@Model.WeekStart.ToString("yyyy-MM-dd")';
+            window.location.href = '@Url.Action("Index", "Menu")?vegetarian=' + isVegetarian + '&weekStart=' + weekStart;
+        }
+    </script>
+}

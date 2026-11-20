@@ -19,3 +19,11 @@ jobs:
         run: dotnet restore AFMarket.sln
       - name: Build
         run: dotnet build AFMarket.sln --configuration Release --no-restore
+      - name: Restore and build Refeitorio API
+        run: |
+          dotnet restore refeitorio/Refeitorio_API/Refeitorio_API.sln
+          dotnet build refeitorio/Refeitorio_API/Refeitorio_API.sln --configuration Release --no-restore
+      - name: Restore and build Refeitorio MVC
+        run: |
+          dotnet restore refeitorio/refeitorio/refeitorio.sln
+          dotnet build refeitorio/refeitorio/refeitorio.sln --configuration Release --no-restore

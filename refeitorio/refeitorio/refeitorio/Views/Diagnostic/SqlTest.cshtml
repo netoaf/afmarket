@@ -1,0 +1,100 @@
+@{
+    ViewData["Title"] = "Teste de Conexão SQL";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="alert alert-info mb-4">
+        <h4>Diagnóstico de Banco de Dados</h4>
+        <p>Esta página testa a conexão entre o cliente, a API e o banco de dados SQL.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Configuração da Conexão</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>URL da API:</strong> @ViewBag.ApiBaseUrl</p>
+                    <p><strong>Estado do processo:</strong> @ViewBag.ApiProcess</p>
+                    <div class="mt-3">
+                        <button id="testSqlBtn" class="btn btn-warning me-2">Testar SQL</button>
+                        <a href="@Url.Action("Index", "Diagnostic")" class="btn btn-secondary">Voltar ao Diagnóstico</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Resultado do Teste</h5>
+                </div>
+                <div class="card-body">
+                    <div id="testResults">
+                        @if(ViewBag.SqlStatus != null)
+                        {
+                            <div class="alert @(ViewBag.SqlStatus.Success ? "alert-success" : "alert-danger")">
+                                <h5>@ViewBag.SqlStatus.Message</h5>
+                                <pre class="bg-light p-3 mt-3" style="max-height: 500px; overflow: auto;">@ViewBag.SqlStatus.Details</pre>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-secondary">
+                                Clique em um dos botões acima para executar um teste.
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Como corrigir problemas de conexão</h5>
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li>Verifique se o SQL Server está instalado e rodando na máquina</li>
+                        <li>Confirme se a string de conexão em appsettings.json da API está correta</li>
+                        <li>Certifique-se que a API está rodando em https://localhost:7091</li>
+                        <li>Verifique se o banco de dados RefeitorioDB foi criado no SQL Server</li>
+                        <li>Use o botão "Testar SQL" para diagnósticos detalhados</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Função para testar o SQL
+            $('#testSqlBtn').click(function() {
+                const btn = $(this);
+                const originalText = btn.text();
+                btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Testando...');
+                
+                fetch('@Url.Action("TestSqlConnection", "Diagnostic")')
+                    .then(response => {
+                        window.location.reload();
+                    })
+                    .catch(error => {
+                        $('#testResults').html(`<div class="alert alert-danger">
+                            <h5>Erro ao testar SQL</h5>
+                            <p>${error.message}</p>
+                        </div>`);
+                        btn.prop('disabled', false).text(originalText);
+                    });
+            });
+        });
+    </script>
+}

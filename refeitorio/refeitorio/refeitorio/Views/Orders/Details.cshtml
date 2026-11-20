@@ -1,0 +1,97 @@
+@using refeitorio.Services
+@model OrderDTO
+
+@{
+    ViewData["Title"] = $"Pedido #{Model.Id.ToString("D5")}";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">Detalhes do Pedido #@Model.Id.ToString("D5")</h1>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Itens do Pedido</h5>
+                    <span class="badge @(Model.Status == "Entregue" ? "bg-success" : Model.Status == "Cancelado" ? "bg-danger" : "bg-primary")">
+                        @Model.Status
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Quantidade</th>
+                                    <th>Preço Unit.</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>@item.ProductName</td>
+                                        <td>@item.Quantity</td>
+                                        <td>€@item.UnitPrice.ToString("F2")</td>
+                                        <td>€@item.TotalPrice.ToString("F2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer text-end">
+                    <strong>Total: €@Model.TotalAmount.ToString("F2")</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Informações do Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Data do Pedido:</span>
+                            <span>@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</span>
+                        </li>
+                        @if (Model.DeliveredAt.HasValue)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>Data de Entrega:</span>
+                                <span>@Model.DeliveredAt.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                            </li>
+                        }
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Status:</span>
+                            <span class="badge @(Model.Status == "Entregue" ? "bg-success" : Model.Status == "Cancelado" ? "bg-danger" : "bg-primary")">
+                                @Model.Status
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Total de Itens:</span>
+                            <span>@Model.Items.Sum(i => i.Quantity)</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Valor Total:</span>
+                            <span class="fw-bold">€@Model.TotalAmount.ToString("F2")</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <a asp-action="Index" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left"></i> Voltar para o Histórico
+                </a>
+                <a asp-controller="Products" asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-shop"></i> Continuar Comprando
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

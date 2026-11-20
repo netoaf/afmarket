@@ -1,0 +1,476 @@
+@model List<refeitorio.Services.OrderDTO>
+
+@{
+    ViewData["Title"] = "Aprovação de Pedidos";
+}
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-0">
+                <i class="bi bi-clipboard-check text-primary"></i> 
+                Aprovação de Pedidos
+            </h2>
+            <p class="text-muted">Gerir e aprovar pedidos de utilizadores</p>
+        </div>
+        <div class="col-auto">
+            <a asp-action="OrderHistory" class="btn btn-outline-secondary">
+                <i class="bi bi-clock-history"></i> Ver Histórico
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-warning bg-opacity-10 rounded-3 p-3">
+                                <i class="bi bi-hourglass-split text-warning fs-3"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Pedidos Pendentes</h6>
+                            <h3 class="mb-0" id="pending-count">@Model.Count</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                                <i class="bi bi-currency-euro text-success fs-3"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Valor Total</h6>
+                            <h3 class="mb-0" id="total-value">€@Model.Sum(o => o.TotalAmount).ToString("F2")</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-info bg-opacity-10 rounded-3 p-3">
+                                <i class="bi bi-people text-info fs-3"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Utilizadores</h6>
+                            <h3 class="mb-0" id="users-count">@Model.Select(o => o.UserId).Distinct().Count()</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders List -->
+    @if (!Model.Any())
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+                <h5 class="mt-3 text-muted">Nenhum pedido pendente</h5>
+                <p class="text-muted">Todos os pedidos foram processados.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+            {
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card border-0 shadow-sm h-100 order-card" data-order-id="@order.Id" data-user-id="@order.UserId" data-total="@order.TotalAmount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)">
+                        <div class="card-header bg-white border-0 pt-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">
+                                        <i class="bi bi-person-circle text-primary"></i>
+                                        @order.UserName
+                                    </h6>
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock"></i>
+                                        @order.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                                    </small>
+                                </div>
+                                @if (order.Status == "Pending")
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-hourglass-split"></i> Pendente
+                                    </span>
+                                }
+                                else if (order.Status == "Ready")
+                                {
+                                    <span class="badge bg-info text-white">
+                                        <i class="bi bi-check-circle"></i> Pronto
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="text-muted mb-3">
+                                <i class="bi bi-bag"></i> Itens do Pedido
+                            </h6>
+                            <div class="order-items mb-3">
+                                @foreach (var item in order.Items)
+                                {
+                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                        <div class="flex-grow-1">
+                                            <div class="fw-medium">@item.ProductName</div>
+                                            <small class="text-muted">
+                                                @item.Quantity x €@item.UnitPrice.ToString("F2")
+                                            </small>
+                                        </div>
+                                        <div class="text-end">
+                                            <strong>€@item.TotalPrice.ToString("F2")</strong>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                <strong>Total:</strong>
+                                <h5 class="mb-0 text-primary">€@order.TotalAmount.ToString("F2")</h5>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-0 pb-3">
+                            <div class="d-grid gap-2">
+                                @if (order.Status == "Pending")
+                                {
+                                    <button class="btn btn-success btn-approve" data-order-id="@order.Id">
+                                        <i class="bi bi-check-circle"></i> Aprovar Pedido
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-cancel" data-order-id="@order.Id">
+                                        <i class="bi bi-x-circle"></i> Cancelar
+                                    </button>
+                                }
+                                else if (order.Status == "Ready")
+                                {
+                                    <button class="btn btn-primary btn-deliver" data-order-id="@order.Id">
+                                        <i class="bi bi-box-arrow-right"></i> Entregar Pedido
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-cancel" data-order-id="@order.Id">
+                                        <i class="bi bi-x-circle"></i> Cancelar
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Helper function to attach deliver handler
+            function attachDeliverHandler(btn) {
+                if (!btn) return;
+                btn.addEventListener('click', async function() {
+                    const orderId = this.dataset.orderId;
+                    const card = document.querySelector(`[data-order-id="${orderId}"]`);
+                    const columnWrapper = card?.closest('.col-lg-6');
+                    
+                    if (!confirm('Tem certeza que deseja marcar este pedido como entregue?')) {
+                        return;
+                    }
+
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
+
+                    try {
+                        const response = await fetch('@Url.Action("DeliverOrder", "Staff")', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `orderId=${orderId}`
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            showToast('success', data.message);
+                            if (columnWrapper) {
+                                columnWrapper.style.transition = 'all 0.5s ease';
+                                columnWrapper.style.opacity = '0';
+                                columnWrapper.style.transform = 'scale(0.9)';
+                                
+                                setTimeout(() => {
+                                    columnWrapper.remove();
+                                    updateStats();
+                                }, 500);
+                            }
+                        } else {
+                            showToast('danger', data.message);
+                            this.disabled = false;
+                            this.innerHTML = '<i class="bi bi-box-arrow-right"></i> Entregar Pedido';
+                        }
+                    } catch (error) {
+                        showToast('danger', 'Erro ao processar pedido');
+                        this.disabled = false;
+                        this.innerHTML = '<i class="bi bi-box-arrow-right"></i> Entregar Pedido';
+                    }
+                });
+            }
+
+            // Helper function to attach cancel handler
+            function attachCancelHandler(btn) {
+                if (!btn) return;
+                btn.addEventListener('click', async function() {
+                    const orderId = this.dataset.orderId;
+                    const card = document.querySelector(`[data-order-id="${orderId}"]`);
+                    const columnWrapper = card?.closest('.col-lg-6');
+                    
+                    if (!confirm('Tem certeza que deseja cancelar este pedido? O saldo será devolvido ao utilizador.')) {
+                        return;
+                    }
+
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
+
+                    try {
+                        const response = await fetch('@Url.Action("RejectOrder", "Staff")', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `orderId=${orderId}`
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            showToast('info', data.message);
+                            if (columnWrapper) {
+                                columnWrapper.style.transition = 'all 0.5s ease';
+                                columnWrapper.style.opacity = '0';
+                                columnWrapper.style.transform = 'scale(0.9)';
+                                
+                                setTimeout(() => {
+                                    columnWrapper.remove();
+                                    updateStats();
+                                }, 500);
+                            }
+                        } else {
+                            showToast('danger', data.message);
+                            this.disabled = false;
+                            this.innerHTML = '<i class="bi bi-x-circle"></i> Cancelar';
+                        }
+                    } catch (error) {
+                        showToast('danger', 'Erro ao processar pedido');
+                        this.disabled = false;
+                        this.innerHTML = '<i class="bi bi-x-circle"></i> Cancelar';
+                    }
+                });
+            }
+
+            // Aprovar pedido (Pending -> Ready)
+            document.querySelectorAll('.btn-approve').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const orderId = this.dataset.orderId;
+                    const card = document.querySelector(`[data-order-id="${orderId}"]`);
+                    
+                    if (!confirm('Tem certeza que deseja aprovar este pedido?')) {
+                        return;
+                    }
+
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
+
+                    try {
+                        const response = await fetch('@Url.Action("ApproveOrder", "Staff")', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `orderId=${orderId}`
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            showToast('success', data.message);
+                            // Atualizar o card dinamicamente: Pending -> Ready
+                            const badge = card.querySelector('.badge');
+                            badge.className = 'badge bg-info text-white';
+                            badge.innerHTML = '<i class="bi bi-check-circle"></i> Pronto';
+                            
+                            // Substituir botões: Aprovar -> Entregar
+                            const footer = card.querySelector('.card-footer .d-grid');
+                            footer.innerHTML = `
+                                <button class="btn btn-primary btn-deliver" data-order-id="${orderId}">
+                                    <i class="bi bi-box-arrow-right"></i> Entregar Pedido
+                                </button>
+                                <button class="btn btn-outline-danger btn-cancel" data-order-id="${orderId}">
+                                    <i class="bi bi-x-circle"></i> Cancelar
+                                </button>
+                            `;
+                            
+                            // Re-anexar event listeners aos novos botões
+                            attachDeliverHandler(footer.querySelector('.btn-deliver'));
+                            attachCancelHandler(footer.querySelector('.btn-cancel'));
+                        } else {
+                            showToast('danger', data.message);
+                            this.disabled = false;
+                            this.innerHTML = '<i class="bi bi-check-circle"></i> Aprovar Pedido';
+                        }
+                    } catch (error) {
+                        showToast('danger', 'Erro ao processar pedido');
+                        this.disabled = false;
+                        this.innerHTML = '<i class="bi bi-check-circle"></i> Aprovar Pedido';
+                    }
+                });
+            });
+
+            // Attach handlers to existing deliver and cancel buttons
+            document.querySelectorAll('.btn-deliver').forEach(btn => attachDeliverHandler(btn));
+            document.querySelectorAll('.btn-cancel').forEach(btn => attachCancelHandler(btn));
+
+            function showToast(type, message) {
+                const toastHtml = `
+                    <div class="toast align-items-center text-white bg-${type} border-0 position-fixed top-0 end-0 m-3" role="alert" style="z-index: 9999;">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.insertAdjacentHTML('beforeend', toastHtml);
+                const toastElement = document.body.lastElementChild;
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+                
+                toastElement.addEventListener('hidden.bs.toast', () => {
+                    toastElement.remove();
+                });
+            }
+
+            function updateStats() {
+                const orderCards = document.querySelectorAll('.order-card');
+                const remainingOrders = orderCards.length;
+                
+                // Update pending count
+                const pendingCount = document.getElementById('pending-count');
+                if (pendingCount) pendingCount.textContent = remainingOrders;
+                
+                // Calculate total value from data-total attribute (reliable numeric source)
+                let totalValue = 0;
+                const uniqueUsers = new Set();
+                
+                orderCards.forEach(card => {
+                    // Read from data-total attribute (always numeric with dot separator)
+                    const totalAttr = card.dataset.total;
+                    if (totalAttr) {
+                        const price = parseFloat(totalAttr);
+                        if (!isNaN(price)) {
+                            totalValue += price;
+                        }
+                    }
+                    
+                    const userId = card.dataset.userId;
+                    if (userId) uniqueUsers.add(userId);
+                });
+                
+                // Update total value
+                const totalValueEl = document.getElementById('total-value');
+                if (totalValueEl) totalValueEl.textContent = '€' + totalValue.toFixed(2);
+                
+                // Update users count
+                const usersCount = document.getElementById('users-count');
+                if (usersCount) usersCount.textContent = uniqueUsers.size;
+                
+                // If no orders remain, reload to show empty state
+                if (remainingOrders === 0) {
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                }
+            }
+        });
+    </script>
+
+    <style>
+        .order-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .order-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .order-items {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .order-items::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .order-items::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .order-items::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .order-items::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .btn-approve {
+            transition: all 0.3s ease;
+        }
+
+        .btn-approve:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 8px rgba(25, 135, 84, 0.3);
+        }
+
+        .btn-reject {
+            transition: all 0.3s ease;
+        }
+
+        .btn-reject:hover {
+            transform: scale(1.02);
+        }
+    </style>
+}

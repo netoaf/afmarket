@@ -79,3 +79,7 @@ A school project, built independently with AI as a development aid. Payments are
 simulated and authentication is a small session-based layer. A production version
 would move to ASP.NET Core Identity, EF migrations, policy-based authorization and
 integration tests.
+
+## Also in this repo
+
+[Refeitorio](refeitorio/) is a second project: a school cafeteria system (ASP.NET Core MVC + Web API, EF Core, SQL Server) with student, staff and admin roles. See its README for the architecture and how to run it.

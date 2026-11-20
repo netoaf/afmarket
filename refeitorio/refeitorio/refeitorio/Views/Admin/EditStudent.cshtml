@@ -1,0 +1,44 @@
+@model refeitorio.ViewModels.UserViewModel
+@{
+    ViewData["Title"] = "Editar Estudante";
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h2>✏️ Editar Estudante</h2>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" asp-action="EditStudent">
+            <input type="hidden" name="Id" value="@Model.Id" />
+
+            <div class="mb-3">
+                <label class="form-label">Nome</label>
+                <input type="text" name="Name" class="form-control" value="@Model.Name" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="UserNumber" class="form-control" value="@Model.UserNumber" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Saldo</label>
+                <input type="text" name="Balance" class="form-control" value="@Model.Balance" required pattern="^\d+([.,]\d{1,2})?$" placeholder="Ex: 10.50 ou 10,50" />
+                <small class="text-muted">Use ponto (.) ou vírgula (,) para decimais</small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Tipo(ex. Staff)</label>
+                <input type="text" name="UserType" class="form-control" value="@Model.UserType" />
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">Guardar</button>
+                <a asp-action="Students" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
