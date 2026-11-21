@@ -12,6 +12,27 @@
 
 Built alone as a school project. The presentation layer never touches the database: it only talks to a Web API, which owns the business rules and the data.
 
+<p align="center">
+  <img src="docs/demo.gif" alt="A student logs in, adds products to the cart and checks out" width="720">
+</p>
+
+<p align="center"><sub>Recorded on a local demo database: a student logs in, adds products, checks out, and the balance drops from €75.50 to €61.10.</sub></p>
+
+## The flow
+
+<table>
+  <tr>
+    <td><img src="docs/catalogue.jpg" alt="Product catalogue with category, search, price and allergen filters"></td>
+    <td><img src="docs/cart.jpg" alt="Shopping cart with quantities, total and balance"></td>
+    <td><img src="docs/weekly-menu.jpg" alt="Weekly menu with lunch options per day"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>1. Catalogue and filters</sub></td>
+    <td align="center"><sub>2. Cart with live totals</sub></td>
+    <td align="center"><sub>3. Weekly menu</sub></td>
+  </tr>
+</table>
+
 ## Architecture
 
 ```mermaid
@@ -54,8 +75,10 @@ dotnet run --project Refeitorio_API/WebApplication1   # https://localhost:7091
 dotnet run --project refeitorio/refeitorio            # https://localhost:7073
 ```
 
+With LocalDB instead of SQL Express, override the connection string with an environment variable, for example `ConnectionStrings__DefaultConnection="Server=(localdb)\MSSQLLocalDB;Database=RefeitorioDB;Trusted_Connection=True;TrustServerCertificate=True"`. The seeded weekly menu is dated January 2026, so add rows for the current week to see it filled.
+
 Demo accounts (local only): `admin`, `student`, `func`, all with password `Demo-2026!`. These accounts exist only in the demo seed script. Delete them before any real deployment.
 
 ## Honest scope
 
-A school project, built independently. There are no automated tests yet, the API has no authentication, and sessions live on the server. A production version would add token auth, tests for the order and balance logic, and environment-based configuration. The CI workflow in this repository builds both solutions on every push.
+A school project, built independently. The order and balance logic is covered by xUnit tests (`Refeitorio_API/WebApplication1.Tests`, run in CI); the rest has no automated tests yet, the API has no authentication, and sessions live on the server. A production version would add token auth, wider test coverage, transactional checkout and environment-based configuration. The CI workflow in this repository builds both solutions on every push.

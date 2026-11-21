@@ -53,8 +53,8 @@ namespace refeitorio.Services
                     UserNumber = userNumber,
                     Password = password,
                     Name = name,
-                    Email = email,
-                    Phone = phone,
+                    Email = email ?? "",
+                    Phone = phone ?? "",
                     UserType = "Student"
                 };
 
