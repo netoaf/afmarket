@@ -81,4 +81,4 @@ Demo accounts (local only): `admin`, `student`, `func`, all with password `Demo-
 
 ## Honest scope
 
-A school project, built independently. There are no automated tests yet, the API has no authentication, and sessions live on the server. A production version would add token auth, tests for the order and balance logic, and environment-based configuration. The CI workflow in this repository builds both solutions on every push.
+A school project, built independently. The order and balance logic is covered by xUnit tests (`Refeitorio_API/WebApplication1.Tests`, run in CI); the rest has no automated tests yet, the API has no authentication, and sessions live on the server. A production version would add token auth, wider test coverage, transactional checkout and environment-based configuration. The CI workflow in this repository builds both solutions on every push.

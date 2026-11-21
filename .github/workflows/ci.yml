@@ -27,3 +27,5 @@ jobs:
         run: |
           dotnet restore refeitorio/refeitorio/refeitorio.sln
           dotnet build refeitorio/refeitorio/refeitorio.sln --configuration Release --no-restore
+      - name: Test Refeitorio API
+        run: dotnet test refeitorio/Refeitorio_API/Refeitorio_API.sln --configuration Release --no-build
